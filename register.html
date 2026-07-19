@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hab Adis Virtual School - Comprehensive Register & Recovery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; font-family: sans-serif; }
+        .register-card { border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .step-bubble { width: 35px; height: 35px; border-radius: 50%; background-color: #e0e0e0; color: #6c757d; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .step-bubble.active { background-color: #198754; color: white; }
+        .step-bubble.completed { background-color: #20c997; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            
+            <!-- 📋 የተማሪዎች አዲስ ምዝገባ ካርድ (Multi-Step Register) -->
+            <div class="card register-card p-4 p-md-5 bg-white mb-5" id="mainRegisterCard">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-success">🌱 የሐብ አዲስ ተማሪዎች ምዝገባ</h3>
+                    <p class="text-muted small">እባክዎ ሁሉንም መረጃዎች በትክክል ያሟሉ፤ መረጃዎ በአድሚን ሲረጋገጥ የክፍያ አማራጭ ይደርስዎታል።</p>
+                </div>
+
+                <!-- የደረጃዎች ማሳያ ማውጫ -->
+                <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+                    <div class="text-center">
+                        <div class="step-bubble active mx-auto" id="bubble1">1</div>
+                        <span class="small fw-bold mt-1 d-block">መረጃ መሙያ</span>
+                    </div>
+                    <div class="flex-grow-1 border-top mb-3 mx-2"></div>
+                    <div class="text-center">
+                        <div class="step-bubble mx-auto" id="bubble2">2</div>
+                        <span class="small fw-bold mt-1 d-block">የክፍያ አማራጭ</span>
+                    </div>
+                    <div class="flex-grow-1 border-top mb-3 mx-2"></div>
+                    <div class="text-center">
+                        <div class="step-bubble mx-auto" id="bubble3">3</div>
+                        <span class="small fw-bold mt-1 d-block">ማረጋገጫ</span>
+                    </div>
+                </div>
+
+                <!-- 1️⃣ ደረጃ 1፦ የተማሪው ሙሉ መረጃ መሙያ ፎርም -->
+                <div id="step1_FormArea">
+                    <form id="studentRegistrationForm" onsubmit="submitStep1_Info(event)">
+                        
+                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3">👤 1. የግል መረጃ</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">የተማሪው ሙሉ ስም *</label>
+                                <input type="text" id="regName" class="form-control" required placeholder="ለምሳሌ፦ አበበ ከበደ">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">እድሜ *</label>
+                                <input type="number" id="regAge" class="form-control" required min="9" max="30" placeholder="እድሜ">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">የመመዝገቢያ ክፍል *</label>
+                                <select id="regGrade" class="form-select" required onchange="toggleMinistryCardField()">
+                                    <option value="">ምረጥ...</option>
+                                    <option value="5">5ኛ</option><option value="6">6ኛ</option><option value="7">7ኛ</option><option value="8">8ኛ</option>
+                                    <option value="9">9ኛ</option><option value="10">10ኛ</option><option value="11">11ኛ</option><option value="12">12ኛ</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">የእናት ሙሉ ስም *</label>
+                                <input type="text" id="regMotherName" class="form-control" required placeholder="የእናት ስም">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">የራስ ስልክ ቁጥር *</label>
+                                <input type="tel" id="regUserPhone" class="form-control" required placeholder="09........">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">የቤተሰብ ስልክ ቁጥር *</label>
+                                <input type="tel" id="regFamilyPhone" class="form-control" required placeholder="09........">
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3">📍 2. የመኖሪያ አድራሻ</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">ክልል *</label>
+                                <input type="text" id="regRegion" class="form-control" required placeholder="ለምሳሌ፦ አዲስ አበባ">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">ከተማ *</label>
+                                <input type="text" id="regCity" class="form-control" required placeholder="ከተማ">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">ክፍለ ከተማ *</label>
+                                <input type="text" id="regSubCity" class="form-control" required placeholder="ክፍለ ከተማ">
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3">🆔 3. የብሔራዊ መታወቂያ መረጃ</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">የመታወቂያ / FCN ቁጥር *</label>
+                                <input type="text" id="regFcn" class="form-control" required placeholder="FCN-1234567">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">የመታወቂያ ፎቶ (የፊተኛው ገጽ) *</label>
+                                <input type="file" id="regIdFront" class="form-control" accept="image/*" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">የመታወቂያ ፎቶ (የኋላኛው ገጽ) *</label>
+                                <input type="file" id="regIdBack" class="form-control" accept="image/*" required>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3">📜 4. የትምህርት ማስረጃዎች (ሰርተፍኬት)</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">የአምና ሰርተፍኬት - የፊት ገጽ *</label>
+                                <input type="file" id="regCertFront" class="form-control" accept="image/*,.pdf" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">የአምና ሰርተፍኬት - የኋላ ገጽ *</label>
+                                <input type="file" id="regCertBack" class="form-control" accept="image/*,.pdf" required>
+                            </div>
+                        </div>
+
+                        <div id="ministryCardSection" class="d-none alert alert-warning p-3 mb-4">
+                            <label class="form-label small fw-bold text-dark">🎯 ከ9ኛ ክፍል በላይ ስለመረጡ፦ የ8ኛ ክፍል ሚኒስትሪ ካርድ ከዋናው ሰርተፍኬት በተጨማሪ እዚህ ያያይዙ *</label>
+                            <input type="file" id="regMinistryCard" class="form-control" accept="image/*,.pdf">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2">ሁሉንም መረጃ ለአድሚን ማረጋገጫ ላክ</button>
+                    </form>
+                </div>
+
+                <!-- 2️⃣ ደረጃ 2፦ የአድሚን ፍቃድ መጠበቂያ ወይም የክፍያ አማራጭ ማሳያ -->
+                <div id="step2_PaymentArea" class="d-none text-center py-3">
+                    <div id="waitingAdminInfoApproval">
+                        <span class="material-icons text-warning display-4 animate-spin">hourglass_empty</span>
+                        <h5 class="fw-bold mt-3">የመረጃዎች እና የሰርተፍኬቶች ማረጋገጫ በመካሄድ ላይ ነው...</h5>
+                        <p class="text-muted small">ያስገቡት ዝርዝር መረጃ በአድሚን እየታየ ነው። አድሚን መረጃዎን **Pass Info** ሲያደርገው የክፍያ አማራጮች እዚህ ገጽ ላይ ይከፈታሉ።</p>
+                        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="checkCurrentStatus()">🔄 ሁኔታውን አድስ</button>
+                    </div>
+
+                    <div id="paymentOptionsBox" class="d-none text-start">
+                        <div class="alert alert-success p-3 text-center mb-4">
+                            🎉 እንኳን ደስ አለዎት! መረጃዎ በአድሚን ተረጋግጦ <b>Pass</b> ሆነዋል። እባክዎ ክፍያውን በባንክ አካውንታችን ገቢ ያድርጉ።
+                        </div>
+                        <h6 class="fw-bold text-success mb-2">🏦 የክፍያ አማራጮች</h6>
+                        <ul class="list-group list-group-flush mb-4 small border rounded p-2 bg-light">
+                            <li class="list-group-item bg-transparent">• የኢትዮጵያ ንግድ ባንክ (CBE)፦ <b>1000123456789</b></li>
+                            <li class="list-group-item bg-transparent">• አዋሽ ባንክ (Awash)፦ <b>01320987654321</b></li>
+                            <li class="list-group-item bg-transparent">• የዓመታዊ ክፍያ መጠን፦ <b>7,500 ETB</b></li>
+                        </ul>
+
+                        <form id="paymentUploadForm" onsubmit="submitStep2_Payment(event)">
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">የከፈሉበትን የባንክ ደረሰኝ (Receipt) ፎቶ ወይም PDF እዚህ ያያይዙ *</label>
+                                <input type="file" id="regReceiptFile" class="form-control" accept="image/*,.pdf" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">የክፍያ ደረሰኙን ለአድሚን ላክ</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 3️⃣ ደረጃ 3፦ የክፍያ ማረጋገጫ መጠበቂያ እና የፓስዋርድ መቀበያ -->
+                <div id="step3_FinalArea" class="d-none text-center py-4">
+                    <div id="waitingAdminPaymentApproval">
+                        <span class="material-icons text-info display-4 mb-2">receipt_long</span>
+                        <h5 class="fw-bold">የክፍያ ደረሰኝዎ ለአድሚን ደርሷል!</h5>
+                        <p class="text-muted small">አድሚን የባንክ ደረሰኝዎን አይቶ **Pass Payment** ሲያደርገው፣ ሲስተሙ መግቢያ ፓስዋርድዎን እዚህ ይሰጥዎታል።</p>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="checkCurrentStatus()">🔄 ሁኔታውን አድስ</button>
+                    </div>
+
+                    <div id="successCredentialsBox" class="d-none">
+                        <span class="material-icons text-success display-1 mb-2">task_alt</span>
+                        <h4 class="fw-bold text-success">🎉 ምዝገባዎ ሙሉ በሙሉ ተጠናቋል!</h4>
+                        <div class="alert alert-dark p-3 my-3 text-start font-monospace">
+                            <div>🆔 የተማሪ ID፦ <b class="text-warning fs-5" id="finalStudentId">--</b></div>
+                            <div class="mt-2">🔑 ሚስጥራዊ ቁጥር (Password)፦ <b class="text-warning fs-5" id="finalStudentPass">--</b></div>
+                        </div>
+                        <button class="btn btn-success fw-bold px-5 mt-2" onclick="resetRegistrationWorkflow()">እሺ መረጃውን ያዝኩኝ</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 🔑 2. የጠፋ ID እና ፓስዋርድ መመለሻ ጥያቄ መላኪያ እና መከታተያ ካርድ (የተስተካከለ) -->
+            <div class="card register-card p-4 bg-white" id="recoveryCardArea">
+                <div class="d-flex align-items-center mb-3 text-warning">
+                    <span class="material-icons display-6 me-2">help_center</span>
+                    <h5 class="fw-bold m-0 text-dark">🔑 የጠፋ መለያ (ID) ወይም ፓስዋርድ ማግኛ ፎርም</h5>
+                </div>
+                
+                <!-- የጥያቄ መሙያ ቅጽ -->
+                <div id="recoveryFormInputs">
+                    <p class="text-muted small">የመግቢያ መረጃዎ ከጠፋብዎት፣ በምዝገባ ወቅት የተጠቀሙበትን ስም፣ ክፍል እና የብሔራዊ መታወቂያ (FCN) ቁጥር በመሙላት ለአድሚን ማስታወቂያ ይላኩ።</p>
+                    <form id="recoveryRequestForm" onsubmit="submitRecoveryNotification(event)">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <label class="small fw-bold mb-1">የተማሪው ሙሉ ስም</label>
+                                <input type="text" id="recName" class="form-control form-control-sm" placeholder="ሙሉ ስም" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold mb-1">ክፍል</label>
+                                <select id="recGrade" class="form-select form-select-sm" required>
+                                    <option value="">መምረጫ...</option>
+                                    <option value="5">5ኛ</option><option value="6">6ኛ</option><option value="7">7ኛ</option><option value="8">8ኛ</option>
+                                    <option value="9">9ኛ</option><option value="10">10ኛ</option><option value="11">11ኛ</option><option value="12">12ኛ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold mb-1">የመታወቂያ FCN ቁጥር</label>
+                                <input type="text" id="recFcn" class="form-control form-control-sm" placeholder="ለምሳሌ FCN-12345" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-warning w-100 fw-bold">⚠️ የጠፋ መረጃ ማግኛ ማስታወቂያ ለአድሚን ላክ</button>
+                    </form>
+                </div>
+
+                <!-- ⏳ አድሚኑ እስኪያሳልፍ ድረስ ተማሪው የሚጠብቅበት መቆጣጠሪያ ማሳያ (አዲስ የተጨመረ) -->
+                <div id="recoveryWaitingArea" class="d-none text-center py-3">
+                    <div class="spinner-border text-warning spinner-border-sm mb-2" role="status"></div>
+                    <h6 class="fw-bold text-dark m-0">የይለፍ ቃል መልሶ ማግኛ ጥያቄዎ ለአድሚን ተልኳል...</h6>
+                    <p class="text-muted small mt-1">አድሚኑ ጥያቄዎን መርምሮ <b>Pass Recovery</b> ሲያደርገው አዲሱ መለያዎ እዚህ ይገለጻል። እባክዎ ጥቂት ደቂቃ ቆይተው ሁኔታውን ይፈትሹ።</p>
+                    
+                    <div class="d-flex gap-2 justify-content-center mt-2">
+                        <button class="btn btn-sm btn-primary fw-bold px-3" onclick="checkRecoveryStatusDirectly()">🔄 የጥያቄ ሁኔታን አድስ</button>
+                        <button class="btn btn-sm btn-outline-secondary px-3" onclick="cancelRecoveryView()">ወደ ኋላ ተመለስ</button>
+                    </div>
+                </div>
+
+                <!-- 🎉 አድሚኑ ጥያቄውን ካሳለፈ በኋላ መረጃውን ለተማሪው ማሳያ ቦክስ (አዲስ የተጨመረ) -->
+                <div id="recoverySuccessResult" class="d-none alert alert-success text-center p-3 mt-2">
+                    <span class="material-icons display-6 text-success mb-1">verified</span>
+                    <h6 class="fw-bold text-success">አድሚን ጥያቄዎን አፅድቆታል። የመግቢያ መረጃዎ እንደሚከተለው ተገኝቷል፦</h6>
+                    
+                    <div class="alert alert-dark font-monospace text-start p-2 my-2 small">
+                        <div>🆔 የተማሪ ID፦ <b class="text-warning" id="recoveredStudentId">--</b></div>
+                        <div class="mt-1">🔑 ፓስዋርድ (Password)፦ <b class="text-warning" id="recoveredStudentPass">--</b></div>
+                    </div>
+                    
+                    <button class="btn btn-sm btn-success w-100 fw-bold mt-1" onclick="finishRecoveryProcess()">እሺ መረጃውን አገኘሁ</button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSessionStudentId = localStorage.getItem("currentRegisteringStudentId") || null;
+    let activeRecoveryFcn = localStorage.getItem("activeRecoveryTrackingFcn") || null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        checkCurrentStatus();
+        checkRecoveryStatusDirectly(); // ገጹ ሲከፈት የrecovery ሁኔታን በራስ-ሰር ያረጋግጣል
+    });
+
+    function toggleMinistryCardField() {
+        const grade = document.getElementById("regGrade").value;
+        const ministrySection = document.getElementById("ministryCardSection");
+        const ministryInput = document.getElementById("regMinistryCard");
+
+        if (grade !== "" && parseInt(grade) >= 9) {
+            ministrySection.classList.remove("d-none");
+            ministryInput.setAttribute("required", "required");
+        } else {
+            ministrySection.classList.add("d-none");
+            ministryInput.removeAttribute("required");
+        }
+    }
+
+    // 1️⃣ ደረጃ 1፦ አዲስ ምዝገባ
+    function submitStep1_Info(e) {
+        e.preventDefault();
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let nextIdNum = 1001 + students.length;
+        let generatedId = "HA" + nextIdNum;
+
+        let newStudent = {
+            id: generatedId,
+            name: document.getElementById("regName").value.trim(),
+            age: document.getElementById("regAge").value,
+            grade: document.getElementById("regGrade").value,
+            motherName: document.getElementById("regMotherName").value.trim(),
+            userPhone: document.getElementById("regUserPhone").value.trim(),
+            familyPhone: document.getElementById("regFamilyPhone").value.trim(),
+            addressDetails: {
+                region: document.getElementById("regRegion").value.trim(),
+                city: document.getElementById("regCity").value.trim(),
+                subCity: document.getElementById("regSubCity").value.trim()
+            },
+            fcnNumber: document.getElementById("regFcn").value.trim(),
+            files: { idFront: "id_front.jpg", idBack: "id_back.jpg", certFront: "cert_front.pdf", certBack: "cert_back.pdf", ministryCard: null },
+            status: "pending_info", 
+            password: "", 
+            receiptFile: null
+        };
+
+        students.push(newStudent);
+        localStorage.setItem("habAdisStudents", JSON.stringify(students));
+        localStorage.setItem("currentRegisteringStudentId", generatedId);
+        currentSessionStudentId = generatedId;
+
+        alert("🎉 መረጃዎ ለአድሚን ተልኳል!");
+        checkCurrentStatus();
+    }
+
+    // 2️⃣ ደረጃ 2፦ ክፍያ መላክ
+    function submitStep2_Payment(e) {
+        e.preventDefault();
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let idx = students.findIndex(s => s.id === currentSessionStudentId);
+
+        if(idx !== -1) {
+            students[idx].receiptFile = "receipt_attached.pdf";
+            students[idx].status = "pending_payment"; 
+            localStorage.setItem("habAdisStudents", JSON.stringify(students));
+            alert("📂 የክፍያ ደረሰኝዎ ለአድሚን ደርሷል።");
+            checkCurrentStatus();
+        }
+    }
+
+    // 🔄 አዲስ ምዝገባ መከታተያ ማዕከላዊ ሎጂክ
+    function checkCurrentStatus() {
+        if (!currentSessionStudentId) { showStepSection(1); return; }
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let stu = students.find(s => s.id === currentSessionStudentId);
+        if (!stu) { showStepSection(1); return; }
+
+        if (stu.status === "pending_info") {
+            showStepSection(2);
+            document.getElementById("waitingAdminInfoApproval").classList.remove("d-none");
+            document.getElementById("paymentOptionsBox").classList.add("d-none");
+        } 
+        else if (stu.status === "info_passed") {
+            showStepSection(2);
+            document.getElementById("waitingAdminInfoApproval").classList.add("d-none");
+            document.getElementById("paymentOptionsBox").classList.remove("d-none");
+        } 
+        else if (stu.status === "pending_payment") {
+            showStepSection(3);
+            document.getElementById("waitingAdminPaymentApproval").classList.remove("d-none");
+            document.getElementById("successCredentialsBox").classList.add("d-none");
+        } 
+        else if (stu.status === "active" && stu.password !== "") {
+            showStepSection(3);
+            document.getElementById("waitingAdminPaymentApproval").classList.add("d-none");
+            document.getElementById("successCredentialsBox").classList.remove("d-none");
+            document.getElementById("finalStudentId").innerText = stu.id;
+            document.getElementById("finalStudentPass").innerText = stu.password;
+        }
+    }
+
+    function showStepSection(step) {
+        document.getElementById("step1_FormArea").classList.add("d-none");
+        document.getElementById("step2_PaymentArea").classList.add("d-none");
+        document.getElementById("step3_FinalArea").classList.add("d-none");
+        if(step === 1) document.getElementById("step1_FormArea").classList.remove("d-none");
+        if(step === 2) document.getElementById("step2_PaymentArea").classList.remove("d-none");
+        if(step === 3) document.getElementById("step3_FinalArea").classList.remove("d-none");
+    }
+
+    function resetRegistrationWorkflow() {
+        localStorage.removeItem("currentRegisteringStudentId");
+        currentSessionStudentId = null;
+        document.getElementById("studentRegistrationForm").reset();
+        showStepSection(1);
+    }
+
+    // ==========================================
+    // 🔑 🔑 የተረሳ ፓስዋርድ መከታተያ ሎጂክ (አዲስ የተስተካከለ) 🔑 🔑
+    // ==========================================
+    
+    // ሀ. ተማሪው ጥያቄውን ለአድሚን ሲልክ መረጃውን መመዝገብ
+    function submitRecoveryNotification(e) {
+        e.preventDefault();
+        let recoveries = JSON.parse(localStorage.getItem("habAdis_recoveries")) || [];
+        let fcnInput = document.getElementById("recFcn").value.trim();
+        
+        let newRequest = {
+            id: "REC" + (100 + recoveries.length),
+            name: document.getElementById("recName").value.trim(),
+            grade: document.getElementById("recGrade").value,
+            fcnNumber: fcnInput,
+            requestDate: new Date().toISOString(),
+            status: "pending_recovery", // አድሚን ሲያሳልፈው ይህ "approved" ይሆናል
+            recoveredId: "",
+            recoveredPassword: ""
+        };
+
+        recoveries.push(newRequest);
+        localStorage.setItem("habAdis_recoveries", JSON.stringify(recoveries));
+        
+        // ይህንን FCN በሴሽን መከታተያነት መያዝ
+        localStorage.setItem("activeRecoveryTrackingFcn", fcnInput);
+        activeRecoveryFcn = fcnInput;
+        
+        alert("⚠️ የጠፋ መረጃ ማግኛ ጥያቄዎ ለአድሚን ተልኳል። አድሚን ሲያሳልፈው እዚሁ ገጽ ላይ ማየት ይችላሉ።");
+        checkRecoveryStatusDirectly();
+    }
+
+    // ለ. አድሚን 'Pass' ማድረጉንና አለማድረጉን ፈትሾ ለተማሪው በገጹ ላይ ማሳያ ሎጂክ
+    function checkRecoveryStatusDirectly() {
+        // መከታተያ FCN ከሌለ የድሮውን መደበኛ የጥያቄ ፎርም ብቻ አሳይ
+        if (!activeRecoveryFcn) {
+            document.getElementById("recoveryFormInputs").classList.remove("d-none");
+            document.getElementById("recoveryWaitingArea").classList.add("d-none");
+            document.getElementById("recoverySuccessResult").classList.add("d-none");
+            return;
+        }
+
+        let recoveries = JSON.parse(localStorage.getItem("habAdis_recoveries")) || [];
+        let req = recoveries.find(r => r.fcnNumber === activeRecoveryFcn);
+
+        if (!req) {
+            cancelRecoveryView();
+            return;
+        }
+
+        // ሁኔታ 1፦ አድሚን ገና ካላየው ጥያቄው መጠበቂያ ላይ መሆኑን አሳይ
+        if (req.status === "pending_recovery") {
+            document.getElementById("recoveryFormInputs").classList.add("d-none");
+            document.getElementById("recoveryWaitingArea").classList.remove("d-none");
+            document.getElementById("recoverySuccessResult").classList.add("d-none");
+        } 
+        // ሁኔታ 2፦ 🎉 አድሚኑ 'Pass' አድርጎት መረጃውን ሞልቶ ከሆነ ውጤቱን አሳይ!
+        else if (req.status === "approved" || req.status === "recovered") {
+            document.getElementById("recoveryFormInputs").classList.add("d-none");
+            document.getElementById("recoveryWaitingArea").classList.add("d-none");
+            document.getElementById("recoverySuccessResult").classList.remove("d-none");
+
+            // ከአድሚኑ የተላከውን ID እና የድሮ ፓስዋርድ ተክቶ ማሳየት
+            document.getElementById("recoveredStudentId").innerText = req.recoveredId || "አድሚን አላስገባም";
+            document.getElementById("recoveredStudentPass").innerText = req.recoveredPassword || "አድሚን አላስገባም";
+        }
+    }
+
+    // ሐ. ተማሪው መረጃውን ካየ በኋላ ሂደቱን ማጠናቀቂያ ቁልፍ
+    function finishRecoveryProcess() {
+        localStorage.removeItem("activeRecoveryTrackingFcn");
+        activeRecoveryFcn = null;
+        document.getElementById("recoveryRequestForm").reset();
+        checkRecoveryStatusDirectly();
+    }
+
+    // መ. ጥያቄውን ሰርዞ ወደ ኋላ መመለሻ ቁልፍ
+    function cancelRecoveryView() {
+        localStorage.removeItem("activeRecoveryTrackingFcn");
+        activeRecoveryFcn = null;
+        checkRecoveryStatusDirectly();
+    }
+</script>
+
+</body>
+</html>

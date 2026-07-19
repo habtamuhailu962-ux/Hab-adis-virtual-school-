@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hab Adis - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; font-family: sans-serif; }
+        .metric-card { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        /* 🌓 የዳርክ ሞድ ስታይል */
+        body.dark-mode { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.dark-mode .card { background-color: #1e1e1e !important; color: #f8f9fa !important; border-color: #2d2d2d !important; }
+        body.dark-mode .table { color: #e0e0e0 !important; border-color: #333 !important; }
+        body.dark-mode thead { background-color: #2d2d2d !important; }
+        body.dark-mode .text-muted { color: #aaa !important; }
+        body.dark-mode input, body.dark-mode select { background-color: #2b2b2b !important; color: #fff !important; border-color: #444 !important; }
+        .btn-xs { padding: 2px 6px; font-size: 11px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- 🔐 1. የአድሚን መግቢያ ፓነል -->
+<div id="adminLoginPanel" class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4 shadow border-0">
+                <div class="text-center mb-4">
+                    <span class="material-icons text-success display-4">admin control pin</span>
+                    <h4 class="fw-bold mt-2">የአድሚን መቆጣጠሪያ መግቢያ</h4>
+                </div>
+                <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">የአድሚን ስም (Username)</label>
+                        <input type="text" id="adminUser" class="form-control" required placeholder="admin">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">ሚስጥራዊ ቁጥር (Password)</label>
+                        <input type="password" id="adminPass" class="form-control" required placeholder="••••••••">
+                    </div>
+                    <div id="loginErrorMsg" class="alert alert-danger p-2 small d-none">❌ የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!</div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 mb-3">ደህንነቱ የተጠበቀ መግቢያ</button>
+                </form>
+                <button class="btn btn-sm btn-outline-secondary w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#securityModal">
+                    ⚙️ የይለፍ ቃል መቀየሪያ / አዲስ አድሚን መፍጠሪያ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 📊 2. ዋናው የአድሚን ዳሽቦርድ -->
+<div id="mainAdminDashboard" class="d-none">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold text-success d-flex align-items-center">
+                <span class="material-icons me-1">gavel</span> Hab Adis Virtual School - Admin Management
+            </span>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-warning fw-bold d-flex align-items-center" onclick="goToEditor()">
+                    <span class="material-icons fs-6 me-1">mark mamager</span> ውጤት መስሪያ እና መቆጣጠሪያ
+                </button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleDarkMode()">🌓 ጨለማ/ብርሃን</button>
+                <button class="btn btn-sm btn-danger fw-bold" onclick="logoutAdmin()">ውጣ</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            
+            <!-- የግራ ጎን ፓነል -->
+            <div class="col-md-3 mb-4">
+                <div class="card p-3 text-center mb-3 border-0 shadow-sm">
+                    <h6 class="fw-bold text-secondary mb-1">⏰ የሲስተም ሰዓት መቆጣጠሪያ</h6>
+                    <h4 class="fw-bold text-success mb-0" id="adminLiveTimer">00:00:00</h4>
+                </div>
+                
+                <div class="card p-3 border-0 shadow-sm">
+                    <h6 class="fw-bold text-secondary mb-2">🔍 የተማሪዎች ስማርት ፍለጋ</h6>
+                    <div class="input-group">
+                        <input type="text" id="adminSearchIdInput" class="form-control form-control-sm" placeholder="FCN ወይም ID ያስገቡ..." oninput="searchStudentByNationalId()">
+                        <span class="input-group-text bg-success text-white p-1"><span class="material-icons fs-5">search</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- የቀኝ ጎን ፓነል -->
+            <div class="col-md-9">
+                       <!-- *** አዲስ፦ ለአድሚን የመልእክት መላኪያ ማዕከል *** -->
+        <div class="card p-4 border-0 shadow-sm bg-white mb-4">
+            <h5 class="fw-bold text-danger mb-3 d-flex align-items-center">
+                <span class="material-icons me-2">campaign</span> ለአጠቃላይ ገጾች አስቸኳይ መልእክት መላኪያ (Announcement)
+            </h5>
+            <div class="row g-2">
+                <div class="col-md-9">
+                    <input type="text" id="adminNoticeInput" class="form-control border-danger py-2" placeholder="ለምሳሌ፦ 'ሰኞ ዕለት የኬሚስትሪ የቀጥታ ስርጭት ስላለ ተማሪዎች በሰዓቱ እንድትገኙ!'">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-danger w-100 fw-bold py-2" onclick="broadcastNotice()">📢 መልእክቱን በቀጥታ ላክ</button>
+                </div>
+            </div>
+        </div>
+
+                <!-- 5ቱ የስታቲስቲክስ ካርዶች -->
+                <div class="row g-3 mb-4">
+                    <div class="col"><div class="card metric-card bg-primary text-white p-3 h-100"><span class="material-icons opacity-75">groups</span><div class="small mt-1">ጠቅላላ ተማሪዎች</div><h3 class="fw-bold mb-0" id="cardTotalStudents">0</h3></div></div>
+                    <div class="col"><div class="card metric-card bg-success text-white p-3 h-100"><span class="material-icons opacity-75">person_add</span><div class="small mt-1">ንቁ ተማሪዎች</div><h3 class="fw-bold mb-0" id="cardWeeklyStudents">0</h3></div></div>
+                    <div class="col"><div class="card metric-card bg-warning text-dark p-3 h-100"><span class="material-icons opacity-75">payments</span><div class="small mt-1">የገባው ጠቅላላ ክፍያ</div><h4 class="fw-bold mb-0" id="cardTotalPayments">0 ETB</h4></div></div>
+                    <div class="col"><div class="card metric-card bg-info text-white p-3 h-100"><span class="material-icons opacity-75">visibility</span><div class="small mt-1">የእለት ተመልካች</div><h3 class="fw-bold mb-0" id="cardDailyViews">0</h3></div></div>
+                    <div class="col"><div class="card metric-card bg-danger text-white p-3 h-100"><span class="material-icons opacity-75">hourglass_empty</span><div class="small mt-1">መዝገብ ላይ ያሉ</div><h3 class="fw-bold mb-0" id="cardPendingStudents">0</h3></div></div>
+                </div>
+
+                <!-- 📋 የተመዘገቡ ተማሪዎች ማረጋገጫ ዝርዝር ሰንጠረዥ (የተስተካከለ) -->
+                <div class="card p-4 border-0 shadow-sm mb-4">
+                    <h5 class="fw-bold text-success mb-3">📋 የተመዘገቡ ተማሪዎች ማረጋገጫ ዝርዝር</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle text-center small">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID ቁጥር</th>
+                                    <th>ሙሉ ስም</th>
+                                    <th>ሰርተፍኬት / ሚኒስትሪ</th>
+                                    <th>የክፍያ ሁኔታ (Payment)</th>
+                                    <th>የመታወቂያ (FCN) ቁጥር</th>
+                                    <th>ድርጊት (Action)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminStudentsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 🔑 የጠፋ ID እና ፓስዋርድ መመለሻ ጥያቄዎች -->
+                <div class="card p-4 border-0 shadow-sm">
+                    <h5 class="fw-bold text-warning mb-3">🔑 የጠፋ ID እና ፓስዋርድ መመለሻ ጥያቄዎች</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle text-center">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>ስም</th><th>ክፍል</th><th>የመታወቂያ FCN ቁጥር</th><th>የጠየቁበት ቀን</th><th>ድርጊት</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRecoveryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔍 📄 የተማሪ ሰርተፍኬት እና ዝርዝር መረጃ ማሳያ ፖፕ-አፕ (MODAL) -->
+<div class="modal fade" id="studentDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="fw-bold modal-title">📋 የተማሪው ስም፣ ሰርተፍኬት እና ክፍያ ማረጋገጫ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="studentModalBodyDetails">
+                <!-- በጥያቄው መሠረት የተስተካከሉ መረጃዎች እዚህ ብቻ ይወጣሉ -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔐 SECURITY MODAL (ሚስጥራዊ ቁጥር መቀየሪያ) -->
+<div class="modal fade" id="securityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="fw-bold modal-title">🔐 የአድሚን ሴኪውሪቲ ማስተካከያ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+                    <h6 class="fw-bold text-success border-bottom pb-1 mb-2">የአድሚን ሚስጥራዊ ቁጥር መቀየሪያ</h6>
+                    <div class="mb-2">
+                        <label class="form-label small">የአሁኑ Password *</label>
+                        <input type="password" id="oldPass" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">አዲስ Password *</label>
+                        <input type="password" id="newPass" class="form-control form-control-sm" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm fw-bold w-100">የይለፍ ቃል ቀይር</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if(!localStorage.getItem("habAdisAdmins")) {
+        localStorage.setItem("habAdisAdmins", JSON.stringify([{ user: "admin", pass: "admin123" }]));
+    }
+
+    let isAdminLoggedIn = false;
+document.addEventListener("DOMContentLoaded", () => {
+            renderStudentList();
+            // ቀድሞ የተላከ ማስታወቂያ ካለ ሳጥኑ ላይ እንዲቆይ
+            document.getElementById("adminNoticeInput").value = localStorage.getItem("habAdisGlobalNotice") || "";
+        });
+
+        // መልእክቱን ለሁሉም ገጽ ማሰራጫ ፈንክሽን
+        function broadcastNotice() {
+            const noticeText = document.getElementById("adminNoticeInput").value;
+            localStorage.setItem("habAdisGlobalNotice", noticeText);
+            alert("📢 መልእክቱ በተሳካ ሁኔታ ተሰራጭቷል! አሁን በ Home እና Classroom ገጾች ላይ በጉልህ ይታያል።");
+        }
+    function handleAdminLogin(e) {
+        e.preventDefault();
+        const userIn = document.getElementById("adminUser").value.trim();
+        const passIn = document.getElementById("adminPass").value.trim();
+        let admins = JSON.parse(localStorage.getItem("habAdisAdmins"));
+        let match = admins.find(a => a.user === userIn && a.pass === passIn);
+
+        if(match) {
+            isAdminLoggedIn = true;
+            sessionStorage.setItem("isAdminAuthorized", "true");
+            document.getElementById("adminLoginPanel").classList.add("d-none");
+            document.getElementById("mainAdminDashboard").classList.remove("d-none");
+            startAdminTimer();
+            loadAdminDashboardData();
+        } else {
+            document.getElementById("loginErrorMsg").classList.remove("d-none");
+        }
+    }
+
+    function loadAdminDashboardData() {
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let recoveries = JSON.parse(localStorage.getItem("habAdis_recoveries")) || [];
+        let dailyViews = localStorage.getItem("habAdis_daily_views") || 0;
+
+        document.getElementById("cardTotalStudents").innerText = students.length;
+        document.getElementById("cardWeeklyStudents").innerText = students.filter(s => s.status === "active").length;
+        document.getElementById("cardTotalPayments").innerText = (students.filter(s => s.status === "active").length * 7500) + " ETB";
+        document.getElementById("cardDailyViews").innerText = dailyViews;
+        document.getElementById("cardPendingStudents").innerText = students.filter(s => s.status === "pending_info" || s.status === "pending_payment").length;
+
+        renderStudentsTable(students);
+        renderRecoveryTable(recoveries);
+    }
+
+    // 📋 የተማሪዎች ሰንጠረዥ - በተሰጠው ትዕዛዝ መሠረት የጸዳ (ስም፣ ሰርተፍኬት፣ ክፍያ፣ FCN ብቻ)
+    function renderStudentsTable(data) {
+        const tbody = document.getElementById("adminStudentsTableBody");
+        tbody.innerHTML = "";
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-muted small">ምንም የተመዘገበ ተማሪ የለም።</td></tr>`;
+            return;
+        }
+        data.forEach(s => {
+            let statusBadge = "";
+            let actionBtn = "";
+
+            // የክፍያ ሁኔታ ማሳያ (Payment Column)
+            if (s.status === "pending_info") {
+                statusBadge = `<span class="badge bg-warning text-dark">መረጃ እየተጠበቀ</span>`;
+                actionBtn = `<button class="btn btn-xs btn-success fw-bold" onclick="approveStudentNextStep('${s.id}')">Pass Info</button>`;
+            } else if (s.status === "info_passed") {
+                statusBadge = `<span class="badge bg-secondary">ክፍያ እየጠበቀ</span>`;
+                actionBtn = `<span class="text-muted small">ደረሰኝ አልላከም</span>`;
+            } else if (s.status === "pending_payment") {
+                statusBadge = `<span class="badge bg-info text-dark">ደረሰኝ ቀርቧል</span>`;
+                actionBtn = `<button class="btn btn-xs btn-primary fw-bold" onclick="approveStudentNextStep('${s.id}')">Pass Payment</button>`;
+            } else if (s.status === "active") {
+                statusBadge = `<span class="badge bg-success">ተከፍሏል (Active)</span>`;
+                actionBtn = `<span class="text-success small fw-bold">🔑 ፓስዋርድ ተልኳል</span>`;
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="fw-bold">${s.id}</td>
+                    <td><b>${s.name}</b></td>
+                    <td>
+                        <button class="btn btn-xs btn-outline-dark fw-bold" onclick="viewFullStudentDetails('${s.id}')">📂 ሰርተፍኬት እይ</button>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td class="small fw-bold text-primary">${s.fcnNumber}</td>
+                    <td>
+                        ${actionBtn}
+                        <button class="btn btn-xs btn-outline-danger ms-1" onclick="deleteStudent('${s.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // 📄 🔍 በጥያቄው መሠረት የተስተካከለው የፖፕ-አፕ (Modal) መረጃ ማሳያ
+    function viewFullStudentDetails(studentId) {
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let s = students.find(item => item.id === studentId);
+        
+        if(s) {
+            const container = document.getElementById("studentModalBodyDetails");
+            container.innerHTML = `
+                <div class="alert alert-light border small">
+                    <h6 class="fw-bold text-success mb-2">👤 የተማሪው ዋና መረጃ</h6>
+                    <div><b>የተማሪው ሙሉ ስም፦</b> ${s.name}</div>
+                    <div><b>የተማሪ መለያ ID፦</b> ${s.id}</div>
+                    <div><b>የመታወቂያ / FCN ቁጥር፦</b> ${s.fcnNumber}</div>
+                    <div><b>የተመዘገበበት ክፍል፦</b> ${s.grade}ኛ ክፍል</div>
+                </div>
+                
+                <div class="border rounded p-3 text-center bg-light mb-3">
+                    <h6 class="fw-bold text-start text-dark small mb-2">📜 የተያያዘ ሰርተፍኬት / ሚኒስትሪ ካርድ</h6>
+                    <span class="material-icons text-secondary display-4">workspace_premium</span>
+                    <div class="small fw-bold mt-1 text-truncate">${s.name}_Ministry_Card.pdf</div>
+                    <p class="text-muted text-xs"> (ይህ የተማሪው የ8ኛ ክፍል ሚኒስትሪ ወይም የደረጃ ማረጋገጫ ሰርተፍኬት ፋይል ነው) </p>
+                </div>
+
+                <div class="border rounded p-3 text-center bg-light">
+                    <h6 class="fw-bold text-start text-dark small mb-2">💰 የባንክ ክፍያ ደረሰኝ (Receipt)</h6>
+                    <span class="material-icons text-primary display-4">receipt_long</span>
+                    <div class="small fw-bold mt-1 text-success">${s.receiptFile || 'የክፍያ ደረሰኝ ገና አልተያያዘም'}</div>
+                    <div class="small text-muted mt-1">የክፍያ ሁኔታ፦ <b>${s.status === 'active' ? 'ተከፍሏል' : 'በምረቃ ላይ'}</b></div>
+                </div>
+            `;
+            let modal = new bootstrap.Modal(document.getElementById('studentDetailsModal'));
+            modal.show();
+        }
+    }
+
+    // 🚀 አድሚኑ Pass ሲያደርግ ደረጃውን የሚያሻሽል ማዕከላዊ ሎጂክ
+    function approveStudentNextStep(studentId) {
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let idx = students.findIndex(s => s.id === studentId);
+        
+        if(idx !== -1) {
+            let currentStatus = students[idx].status;
+            
+            if(currentStatus === "pending_info") {
+                students[idx].status = "info_passed";
+                alert(`🎉 የተማሪው መረጃ እና ሰርተፍኬት ተረጋግጦ Pass ሆኗል! አሁን ለተማሪው የክፍያ አማራጭ ይከፈትለታል።`);
+            } 
+            else if(currentStatus === "pending_payment") {
+                students[idx].status = "active";
+                
+                // 🔑 በአውቶማቲክ የሚመነጭ ባለ 6 አሃዝ ጠንካራ ሚስጥራዊ ቁጥር
+                let autoPassword = Math.floor(100000 + Math.random() * 900000).toString();
+                students[idx].password = autoPassword;
+                
+                alert(`🎉 የባንክ ክፍያው ተረጋግጦ Pass ሆኗል!\nበራስ-ሰር የተፈጠረው መግቢያ ፓስዋርድ፦ ${autoPassword}`);
+            }
+            
+            localStorage.setItem("habAdisStudents", JSON.stringify(students));
+            loadAdminDashboardData();
+        }
+    }
+
+    function searchStudentByNationalId() {
+        const val = document.getElementById("adminSearchIdInput").value.trim().toLowerCase();
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        if(val === "") {
+            renderStudentsTable(students);
+        } else {
+            let filtered = students.filter(s => s.fcnNumber.toLowerCase().includes(val) || s.id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
+            renderStudentsTable(filtered);
+        }
+    }
+
+    function renderRecoveryTable(data) {
+        const tbody = document.getElementById("adminRecoveryTableBody");
+        tbody.innerHTML = "";
+        let pendings = data.filter(r => r.status === "pending_recovery");
+        if(pendings.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-muted small">ምንም የቀረበ የመረጃ ማግኛ ጥያቄ የለም።</td></tr>`;
+            return;
+        }
+        pendings.forEach(r => {
+            tbody.innerHTML += `
+                <tr>
+                    <td class="text-start">${r.name}</td>
+                    <td>${r.grade}ኛ</td>
+                    <td class="fw-bold">${r.fcnNumber}</td>
+                    <td class="small">${new Date(r.requestDate).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-success btn-xs fw-bold" onclick="approveRecovery('${r.id}')">አጽድቅ (አሳይ)</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function approveRecovery(recId) {
+        let recoveries = JSON.parse(localStorage.getItem("habAdis_recoveries")) || [];
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let rec = recoveries.find(r => r.id === recId);
+        if(rec) {
+            let stu = students.find(s => s.fcnNumber === rec.fcnNumber);
+            if(stu && stu.status === 'active') {
+                alert(`🔑 የተማሪው የመግቢያ መረጃ፦\nID ቁጥር፦ ${stu.id}\nፓስዋርድ፦ ${stu.password}`);
+            } else {
+                alert("❌ ይህ መታወቂያ ያለው ንቁ ተማሪ በሲስተሙ ላይ አልተገኘም ወይም ምዝገባው አልተጠናቀቀም!");
+            }
+            rec.status = "approved";
+            localStorage.setItem("habAdis_recoveries", JSON.stringify(recoveries));
+            loadAdminDashboardData();
+        }
+    }
+
+    function handleChangePassword(e) {
+        e.preventDefault();
+        let admins = JSON.parse(localStorage.getItem("habAdisAdmins"));
+        const oldP = document.getElementById("oldPass").value;
+        const newP = document.getElementById("newPass").value;
+        let idx = admins.findIndex(a => a.pass === oldP);
+        if(idx !== -1) {
+            admins[idx].pass = newP;
+            localStorage.setItem("habAdisAdmins", JSON.stringify(admins));
+            alert("🎉 የአድሚን ሚስጥራዊ ቁጥር ተቀይሯል!");
+            document.getElementById("changePasswordForm").reset();
+            bootstrap.Modal.getInstance(document.getElementById('securityModal')).hide();
+        } else { alert("❌ የአሁኑ ሚስጥራዊ ቁጥር አልተስማማም!"); }
+    }
+
+    function deleteStudent(id) {
+        if(confirm("ይህንን ተማሪ ማጥፋት ይፈልጋሉ?")) {
+            let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+            students = students.filter(s => s.id !== id);
+            localStorage.setItem("habAdisStudents", JSON.stringify(students));
+            loadAdminDashboardData();
+        }
+    }
+
+    function goToEditor() {
+        if(sessionStorage.getItem("isAdminAuthorized") === "true") window.location.href = "grade-processor.html";
+    }
+
+    // ሰዓት ቆጣሪ
+    function startAdminTimer() {
+        setInterval(() => {
+            let now = new Date();
+            document.getElementById("adminLiveTimer").innerText = now.toTimeString().split(" ")[0];
+        }, 1000);
+    }
+
+    function toggleDarkMode() { document.body.classList.toggle("dark-mode"); }
+    function logoutAdmin() {
+        isAdminLoggedIn = false;
+        sessionStorage.removeItem("isAdminAuthorized");
+        document.getElementById("mainAdminDashboard").classList.add("d-none");
+        document.getElementById("adminLoginPanel").classList.remove("d-none");
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

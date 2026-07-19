@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hab Adis - Content Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="bg-light py-5">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8" id="editorAccessDeniedBox">
+            <div class="card p-5 text-center shadow border-0">
+                <span class="material-icons text-danger display-1">lock</span>
+                <h3 class="fw-bold mt-3 text-danger">ይህ ገጽ የተቆለፈ ነው!</h3>
+                <p class="text-muted">ይህንን ይዘት መቀያየሪያ ኤዲተር ለመጠቀም መጀመሪያ በአድሚን ገጽ ላይ ደህንነቱ የተጠበቀ ሎግኢን ማከናወን ይኖርብዎታል።</p>
+                <a href="admin.html" class="btn btn-danger fw-bold px-4">ወደ አድሚን ገጽ ተመለስ</a>
+            </div>
+        </div>
+
+        <div class="col-md-9 d-none" id="editorMainPanel">
+            <div class="card p-4 p-md-5 bg-white border-0 shadow">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <h3 class="fw-bold text-success m-0 d-flex align-items-center">
+                        <span class="material-icons me-2">edit_note</span> የይዘት እና የቪዲዮ የጅምላ ማሻሻያ ማዕከል
+                    </h3>
+                    <a href="admin.html" class="btn btn-sm btn-outline-dark fw-bold">ወደ አድሚን ዳሽቦርድ</a>
+                </div>
+
+                <div class="alert alert-warning p-3 mb-4">
+                    <h6 class="fw-bold text-dark d-flex align-items-center mb-2">
+                        <span class="material-icons me-1 fs-5">palette</span> የድረ-ገጾች አጠቃላይ ጭብጥ ቀለም መቀየሪያ (Theme Color)
+                    </h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <input type="color" id="themeColorPicker" class="form-control form-control-color" value="#198754" onchange="changeSystemThemeColor()">
+                        <span class="small text-muted fw-bold">የምትመርጡት ቀለም በሲስተሙ በሙሉ (Navbar, Buttons) ላይ በራስ-ሰር ይተገበራል።</span>
+                    </div>
+                </div>
+
+                <form id="bulkUpdateEditorForm" onsubmit="handleBulkUpdate(event)">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">ሊቀየር የተፈለገው ክፍል (Grade) *</label>
+                            <select id="editGradeSelect" class="form-select" required>
+                                <option value="all">ለሁሉም ክፍሎች በአንድ ጊዜ (Bulk)</option>
+                                <option value="5">5ኛ ክፍል ብቻ</option><option value="6">6ኛ ክፍል ብቻ</option>
+                                <option value="7">7ኛ ክፍል ብቻ</option><option value="8">8ኛ ክፍል ብቻ</option>
+                                <option value="9">9ኛ ክፍል ብቻ</option><option value="10">10ኛ ክፍል ብቻ</option>
+                                <option value="11">11ኛ ክፍል ብቻ</option><option value="12">12ኛ ክፍል ብቻ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">የትምህርት ዓይነት (Subject) *</label>
+                            <input type="text" id="editSubjectName" class="form-control" required placeholder="ለምሳሌ፦ Biology">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">አዲስ የጅምላ ቪዲዮ ሊንክ (YouTube Embed URL) *</label>
+                        <input type="url" id="editBulkVideoUrl" class="form-control" required placeholder="https://www.youtube.com/embed/...">
+                        <div class="form-text small text-muted">ይህ ሊንክ በተመረጠው ክፍል ውስጥ ላሉት **ሁሉም ዩኒቶች** በአንድ ጊዜ ይተገበራል።</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">የምዕራፍ ማጠቃለያ አዲስ ጽሑፍ/ማስታወሻ *</label>
+                        <textarea id="editBulkNotesText" class="form-control" rows="5" required placeholder="መምህሩ የሚናገረውን ወይም ለተማሪዎች የሚቀመጠውን ማስታወሻ እዚህ ይጻፉ..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success fw-bold w-100 py-2">💾 ሁሉንም በአንድ ጊዜ ቀይር እና አዘምን (Bulk Save)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔐 ከአድሚን የመጣ መሆኑን የማረጋገጫ መቆለፊያ ሎጂክ
+    document.addEventListener("DOMContentLoaded", () => {
+        if(sessionStorage.getItem("isAdminAuthorized") === "true") {
+            document.getElementById("editorAccessDeniedBox").classList.add("d-none");
+            document.getElementById("editorMainPanel").classList.remove("d-none");
+        }
+        
+        // የተቀመጠ ቀለም ካለ መጫን
+        let savedColor = localStorage.getItem("habAdis_theme_color");
+        if(savedColor) {
+            document.getElementById("themeColorPicker").value = savedColor;
+        }
+    });
+
+    // 🎨 የቀለም መቀየሪያ አሰራር (Theme Color Picker Logic)
+    function changeSystemThemeColor() {
+        const selectedColor = document.getElementById("themeColorPicker").value;
+        localStorage.setItem("habAdis_theme_color", selectedColor);
+        alert(`🎨 አዲስ የሲስተም ቀለም (${selectedColor}) ተመርጧል! በሁሉም ገጾች ላይ ይተገበራል።`);
+    }
+
+    // 💾 የጅምላ ማሻሻያ ሎጂክ (Bulk Update for All Units)
+    function handleBulkUpdate(e) {
+        e.preventDefault();
+        
+        const gradeTarget = document.getElementById("editGradeSelect").value;
+        const subName = document.getElementById("editSubjectName").value.trim();
+        const videoUrl = document.getElementById("editBulkVideoUrl").value.trim();
+        const notesText = document.getElementById("editBulkNotesText").value.trim();
+
+        // በLocalStorage ላይ ያሉትን ይዘቶች በጅምላ የመቀየር ሎጂክ
+        let globalContent = JSON.parse(localStorage.getItem("habAdis_edited_content")) || {};
+
+        if(gradeTarget === "all") {
+            // ለሁሉም ክፍሎች በአንድ ጊዜ መቀየር
+            for(let g = 5; g <= 12; g++) {
+                if(!globalContent[g]) globalContent[g] = {};
+                globalContent[g][subName] = {
+                    bulkVideo: videoUrl,
+                    bulkNotes: notesText,
+                    lastUpdated: new Date().toISOString()
+                };
+            }
+        } else {
+            // ለተመረጠው ክፍል ብቻ መቀየር
+            if(!globalContent[gradeTarget]) globalContent[gradeTarget] = {};
+            globalContent[gradeTarget][subName] = {
+                bulkVideo: videoUrl,
+                bulkNotes: notesText,
+                lastUpdated: new Date().toISOString()
+            };
+        }
+
+        localStorage.setItem("habAdis_edited_content", JSON.stringify(globalContent));
+        
+        alert(`🎉 ስኬታማ ማሻሻያ!\n${subName} ትምህርት ላይ ያሉት ሁሉም ዩኒቶች በአንድ ጊዜ በአዲሱ ቪዲዮ እና ጽሑፍ ተተክተዋል!`);
+        document.getElementById("bulkUpdateEditorForm").reset();
+    }
+</script>
+
+</body>
+</html>

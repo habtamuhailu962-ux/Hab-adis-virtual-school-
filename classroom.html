@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hab Adis Virtual School - Classroom</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .sidebar-menu .nav-link { border-radius: 8px; color: #333; font-weight: 500; padding: 10px 15px; transition: all 0.2s; }
+        .sidebar-menu .nav-link.active { background-color: #198754 !important; color: #fff; }
+        .sidebar-menu .nav-link:hover:not(.active) { background-color: #e8f5e9; color: #198754; }
+        .subject-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .subject-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        
+        /* 📝 ተንቀሳቃሽ ማስታወሻ ደብተር ስታይል */
+        .draggable-notepad { position: fixed; bottom: 20px; right: 20px; width: 320px; height: 380px; background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; z-index: 1050; border: 1px solid #e0e0e0; }
+        .notepad-header { background-color: #198754; color: #fff; font-weight: bold; padding: 10px 15px; cursor: move; user-select: none; }
+        .notepad-textarea { flex: 1; border: none; padding: 15px; resize: none; font-size: 14px; outline: none; background-color: #fdfdfd; line-height: 1.6; }
+        
+        /* 🌓 የዳርክ ሞድ (Dark Mode) ተኳኋኝነት */
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        body.dark-mode .bg-white { background-color: #1e1e1e !important; color: #f8f9fa !important; }
+        body.dark-mode .card { background-color: #1e1e1e !important; color: #f8f9fa !important; border-color: #2d2d2d; }
+        body.dark-mode .sidebar-menu .nav-link { color: #ccc; }
+        body.dark-mode .sidebar-menu .nav-link:hover:not(.active) { background-color: #2d2d2d; color: #198754; }
+        body.dark-mode .table { color: #e0e0e0; border-color: #2d2d2d; }
+        body.dark-mode .draggable-notepad { background: #1e1e1e; border-color: #333; }
+        body.dark-mode .notepad-textarea { background: #252525; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="studentLoginBox" class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4 shadow border-0 text-center">
+                <span class="material-icons text-success display-4 mb-2">account_circle</span>
+                <h4 class="fw-bold mb-3">ወደ Hab Adis ክላስሩም መግቢያ</h4>
+                <div class="mb-3 text-start">
+                    <label class="form-label small fw-bold">የተማሪ መለያ ቁጥር (ID)</label>
+                    <input type="text" id="loginIdInput" class="form-control" placeholder="HA1001">
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label small fw-bold">ሚስጥራዊ ቁጥር (Password)</label>
+                    <input type="password" id="loginPassInput" class="form-control" placeholder="••••••••">
+                </div>
+                <div id="loginError" class="alert alert-danger p-2 small d-none">❌ የተማሪ መለያ ቁጥር ወይም ሚስጥራዊ ቁጥር አልተገኘም!</div>
+                <button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="processStudentLogin()">ይግቡ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="mainClassroomArea" class="d-none">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-2">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold d-flex align-items-center text-success">
+                <span class="material-icons me-1">school</span> Hab Adis Classroom
+            </span>
+            <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
+                <button class="btn btn-sm btn-outline-success fw-bold d-flex align-items-center" onclick="openNotepadPanel()">
+                    <span class="material-icons fs-6 me-1">edit_note</span> 📝 ማስታወሻ ደብተር
+                </button>
+                <button class="btn btn-sm btn-outline-light text-white" onclick="toggleDarkMode()">🌓</button>
+                <span class="text-white small fw-bold d-none d-sm-inline" id="topStudentName">ተማሪ፦ --</span>
+                <span class="badge bg-success" id="topStudentGrade">-- ክፍል</span>
+                <button class="btn btn-sm btn-danger fw-bold" onclick="logoutStudent()">ውጣ</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            
+            <div class="col-md-3 sidebar-menu bg-white p-3 rounded shadow-sm mb-3">
+                <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">📋 ዋና ማውጫ</h6>
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist">
+                    <button class="nav-link active d-flex align-items-center mb-2" id="v-subjects-tab" data-bs-toggle="tab" data-bs-target="#v-subjects" type="button" onclick="showSubjectsArea()">
+                        <span class="material-icons me-2">menu_book</span> የትምህርት ዓይነቶች
+                    </button>
+                    <button class="nav-link d-flex align-items-center mb-2" id="v-assignments-tab" data-bs-toggle="tab" data-bs-target="#v-assignments" type="button" onclick="loadAssignmentsPage()">
+                        <span class="material-icons me-2">assignment_turned_in</span> የልምምድ ጥያቄዎች
+                    </button>
+                    <button class="nav-link d-flex align-items-center mb-2" id="v-exams-tab" data-bs-toggle="tab" data-bs-target="#v-exams" type="button" onclick="loadExamsPage()">
+                        <span class="material-icons me-2">gavel</span> ማጠቃለያ ፈተና (50%)
+                    </button>
+                    <button class="nav-link d-flex align-items-center mb-2" id="v-report-tab" data-bs-toggle="tab" data-bs-target="#v-report" type="button" onclick="showMyReportCard()">
+                        <span class="material-icons me-2">analytics</span> የእኔ ውጤት
+                    </button>
+                </div>
+                <hr>
+                <div class="alert alert-dark p-2 text-center small m-0 fw-bold">
+                    <span class="material-icons text-warning align-middle fs-6 me-1">timer</span> የዛሬ ቆይታ፦ <span id="liveTimer">00:00</span>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="tab-content" id="v-pills-tabContent">
+                    
+                    <div class="tab-pane fade show active" id="v-subjects" role="tabpanel">
+                        
+                        <div id="subjectsGridPanel" class="">
+                            <h5 class="fw-bold text-success mb-3">📚 የትምህርት ዓይነቶችዎ</h5>
+                            <div class="row g-3" id="studentSubjectsRowGrid"></div>
+                        </div>
+
+                        <div id="singleSubjectContentArea" class="d-none">
+                            <button class="btn btn-sm btn-outline-secondary mb-3 fw-bold d-flex align-items-center" onclick="backToSubjectsGrid()">
+                                <span class="material-icons fs-6 me-1">arrow_back</span> ወደ ሳብጀክቶች ተመለስ
+                            </button>
+                            <h4 class="fw-bold text-dark mb-3" id="currentActiveSubjectTitle">📚 ትምህርት፦ --</h4>
+                            
+                            <div class="row">
+                                <div class="col-lg-8 mb-3">
+                                    <div class="video-container mb-3">
+                                        <iframe id="videoPlayer" src="" allowfullscreen></iframe>
+                                    </div>
+                                    <h5 class="fw-bold text-success" id="videoTitle">የቪዲዮው ርዕስ</h5>
+                                    
+                                    <div id="resumePromptBox" class="card p-3 bg-light border-success mt-3 d-none">
+                                        <h6 class="fw-bold text-success d-flex align-items-center">
+                                            <span class="material-icons me-1">quiz</span> በቪዲዮው መሃል የሚመጣ የክትትል ኩዊዝ
+                                        </h6>
+                                        <p class="small fw-bold mb-2">ጥያቄ፦ ከላይ ከተማርከው ይዘት በመነሳት የዚህን ጥያቄ ትክክለኛ መልስ ምረጥ።</p>
+                                        <div class="form-check mb-2 small">
+                                            <input class="form-check-input" type="radio" name="subQuizOpt" id="optA" value="A">
+                                            <label class="form-check-input-label" for="optA">ሀ) የተሳሳተ መልስ አማራጭ</label>
+                                        </div>
+                                        <div class="form-check mb-2 small">
+                                            <input class="form-check-input" type="radio" name="subQuizOpt" id="optB" value="B">
+                                            <label class="form-check-input-label" for="optB">ለ) ትክክለኛ መልስ አማራጭ</label>
+                                        </div>
+                                        <button class="btn btn-success btn-sm fw-bold mt-2" onclick="submitSubjectQuiz()">መልስህን አረጋግጥ</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-4">
+                                    <div class="card p-3">
+                                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-2">📖 የምዕራፎች ማውጫ</h6>
+                                        <div class="list-group list-group-flush" id="unitsListGroup"></div>
+                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                            <span class="small text-muted" id="unitPageIndicator">ገጽ 0 / 0</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-secondary" id="prevUnitPageBtn" onclick="navigateUnit(-1)">Back</button>
+                                                <button class="btn btn-outline-success" id="nextUnitPageBtn" onclick="navigateUnit(1)">Next</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="v-assignments" role="tabpanel">
+                        <div class="card p-4 bg-white">
+                            <h5 class="fw-bold text-success mb-3">📝 የክፍል ስራዎች እና የልምምድ ጥያቄዎች</h5>
+                            <p class="text-muted small">የእያንዳንዱን ምዕራፍ ቪዲዮ በደንብ ከተመለከቱ በኋላ እዚህ ያሉትን ጥያቄዎች በመሥራት ውጤታችሁን አሳድጉ።</p>
+                            <div class="alert alert-info py-2 small">እባክዎ መጀመሪያ ከግራ ማውጫ ውስጥ የሚፈልጉትን የትምህርት ዓይነት ይምረጡ!</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-exams" role="tabpanel">
+                        <div class="card p-4 bg-white">
+                            <h5 class="fw-bold text-danger mb-3">✍️ የማጠቃለያ ማጠናቀቂያ ፈተና (50%)</h5>
+                            <p class="text-muted small">ይህ ፈተና የሚወሰደው በሴሚስተሩ ማጠናቀቂያ ላይ ብቻ ሲሆን ጠቅላላ 50 ነጥብ ይይዛል።</p>
+                            <div class="alert alert-warning py-2 small">በአሁኑ ሰዓት ክፍት የሆነ የማጠቃለያ ፈተና የለም።</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-report" role="tabpanel">
+                        <div class="card border-0 shadow-sm p-4 bg-white">
+                            <h5 class="fw-bold text-success mb-3">📊 የትምህርት ዓይነቶች ዝርዝር ውጤት</h5>
+                            <p class="text-muted small mb-3">የእርስዎ እውነተኛ ውጤት፤ ኩዊዞችን፣ የልምምድ ጥያቄዎችን እና ፈተናዎችን መሥራት ሲጀምሩ ብቻ በራስ-ሰር እዚህ ይሞላል።</p>
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle text-center">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="text-start">ትምህርት</th>
+                                            <th>ክፍል ስራ (30%)</th>
+                                            <th>ኩዊዝ (20%)</th>
+                                            <th>አቴንዳንስ (0%)</th>
+                                            <th>ማጠቃለያ ፈተና (50%)</th>
+                                            <th>ድምር (100%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="myReportCardTableBody">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="draggable-notepad d-none" id="notepadPanel">
+    <div class="notepad-header d-flex justify-content-between align-items-center" id="notepadHeader">
+        <span class="d-flex align-items-center" style="font-size:13px;">
+            <span class="material-icons fs-5 me-1">edit_note</span> ምናባዊ ማስታወሻ ደብተር
+        </span>
+        <button type="button" class="btn-close btn-close-white" style="font-size:10px; box-shadow:none; cursor:pointer;" onclick="closeNotepadPanel()" aria-label="Close"></button>
+    </div>
+    <textarea id="studentNotes" class="notepad-textarea" placeholder="በትምህርቱ ላይ መምህሩ የሚናገረውን ወይም የጥናት ማስታወሻዎችን እዚህ መፃፍ ይችላሉ..." oninput="saveNotes()"></textarea>
+</div>
+
+<script>
+    // 📚 የክፍል ሳብጀክቶች ዝርዝር መረጃ ቤዝ
+    const gradeSubjects = {
+        "5": ["Biology", "Mathematics", "English", "Amharic"],
+        "6": ["Biology", "Physics", "Mathematics", "English", "Amharic"],
+        "7": ["Biology", "Chemistry", "Physics", "Mathematics", "English", "Amharic"],
+        "8": ["Biology", "Chemistry", "Physics", "Mathematics", "Geography", "History", "English", "Amharic"],
+        "9": ["Biology", "Chemistry", "Physics", "Mathematics", "Geography", "History", "Citizenship Education", "English", "Amharic"],
+        "10": ["Biology", "Chemistry", "Physics", "Mathematics", "Geography", "History", "Citizenship Education", "English", "Amharic"],
+        "11": ["Biology", "Chemistry", "Physics", "Mathematics", "Geography", "English"],
+        "12": ["Biology", "Chemistry", "Physics", "Mathematics", "Geography", "English"]
+    };
+
+    const sampleUnits = [
+        "Unit 1: Introduction to Lesson Topic",
+        "Unit 2: Core Concepts and Theories",
+        "Unit 3: Practical Examples and Cases",
+        "Unit 4: Advanced Principles and Summary"
+    ];
+
+    let loggedInStudent = null;
+    let selectedSubjectName = "";
+    let currentUnitIndex = 0;
+    let totalSecondsSpent = 0;
+    let timerInterval = null;
+
+    // ❌ ማስታወሻ ደብተሩን መዝጊያ ፈንክሽን
+    function closeNotepadPanel() {
+        document.getElementById("notepadPanel").classList.add("d-none");
+    }
+
+    // 📂 ማስታወሻ ደብተሩን መልሶ መክፈቻ ፈንክሽን
+    function openNotepadPanel() {
+        document.getElementById("notepadPanel").classList.remove("d-none");
+    }
+
+    // 🔐 የተማሪዎች ሎግኢን ፕሮሰስ ማስተካከያ
+    function processStudentLogin() {
+        const idInput = document.getElementById("loginIdInput").value.trim();
+        const passInput = document.getElementById("loginPassInput").value.trim();
+        
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let found = students.find(s => s.id === idInput && s.password === passInput);
+
+        if(found) {
+            loggedInStudent = found;
+            document.getElementById("studentLoginBox").classList.add("d-none");
+            document.getElementById("mainClassroomArea").classList.remove("d-none");
+            document.getElementById("notepadPanel").classList.remove("d-none"); // መጀመሪያ ላይ ይከፈታል
+            
+            document.getElementById("topStudentName").innerText = `ተማሪ፦ ${found.name}`;
+            document.getElementById("topStudentGrade").innerText = `${found.grade}ኛ`;
+
+            if(loggedInStudent.savedNotes) {
+                document.getElementById("studentNotes").value = loggedInStudent.savedNotes;
+            }
+
+            // 🛑 የውጤት ሎጂክ ማስተካከያ፦ ናሙና ውጤቶችን ማጥፋት እና እውነተኛ ባዶ መዋቅር መፍጠር
+            if (!loggedInStudent.subjectScores) {
+                loggedInStudent.subjectScores = {};
+            }
+            
+            let subs = gradeSubjects[loggedInStudent.grade] || [];
+            subs.forEach(sub => {
+                // በራሱ የተሰጠው ውጤት ጠፍቷል፤ ሁሉም መጀመሪያ 0 ሆነው ተማሪው መስራት ሲጀምር ብቻ ይሞላሉ
+                if (!loggedInStudent.subjectScores[sub]) {
+                    loggedInStudent.subjectScores[sub] = { cw: 0, qz: 0, att: 0, ex: 0 };
+                }
+            });
+
+            saveStudentDataToLocalStorage();
+            renderSubjectsGrid();
+            startLiveTimer();
+        } else {
+            document.getElementById("loginError").classList.remove("d-none");
+        }
+    }
+
+    // 📚 የሳብጀክቶችን ካርዶች በስክሪን ላይ ማሳያ ሎጂክ
+    function renderSubjectsGrid() {
+        const grid = document.getElementById("studentSubjectsRowGrid");
+        grid.innerHTML = "";
+        let subs = gradeSubjects[loggedInStudent.grade] || [];
+
+        subs.forEach(sub => {
+            grid.innerHTML += `
+                <div class="col-md-4 col-sm-6">
+                    <div class="card subject-card p-4 text-center bg-white" onclick="openSubject('${sub}')">
+                        <span class="material-icons text-success display-6 mb-2">menu_book</span>
+                        <h6 class="fw-bold mb-1">${sub}</h6>
+                        <span class="text-muted small">ክፍል ለማየት ይጫኑ</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function openSubject(subName) {
+        selectedSubjectName = subName;
+        document.getElementById("subjectsGridPanel").classList.add("d-none");
+        document.getElementById("singleSubjectContentArea").classList.remove("d-none");
+        document.getElementById("currentActiveSubjectTitle").innerText = `📚 ትምህርት፦ ${subName}`;
+        
+        renderUnitsList();
+        loadUnitByIndex(0);
+    }
+
+    function backToSubjectsGrid() {
+        document.getElementById("singleSubjectContentArea").classList.add("d-none");
+        document.getElementById("subjectsGridPanel").classList.remove("d-none");
+    }
+
+    function renderUnitsList() {
+        const container = document.getElementById("unitsListGroup");
+        container.innerHTML = "";
+        
+        sampleUnits.forEach((unit, idx) => {
+            container.innerHTML += `
+                <button type="button" class="list-group-item list-group-item-action small py-2 d-flex align-items-center unit-item" id="unitItem-${idx}" onclick="loadUnitByIndex(${idx})">
+                    <span class="material-icons fs-6 me-2 text-secondary">play_circle_outline</span> ${unit}
+                </button>
+            `;
+        });
+    }
+
+    function loadUnitByIndex(index) {
+        currentUnitIndex = index;
+        document.querySelectorAll(".unit-item").forEach(item => item.classList.remove("active"));
+        
+        const target = document.getElementById(`unitItem-${index}`);
+        if(target) target.classList.add("active");
+
+        document.getElementById("videoTitle").innerText = `${selectedSubjectName} - ${sampleUnits[index]}`;
+        document.getElementById("videoPlayer").src = "https://www.youtube.com/embed/b1t41Q3xRM8";
+        document.getElementById("unitPageIndicator").innerText = `ገጽ ${index + 1} / ${sampleUnits.length}`;
+        
+        document.getElementById("prevUnitPageBtn").disabled = index === 0;
+        document.getElementById("nextUnitPageBtn").disabled = index === sampleUnits.length - 1;
+
+        // የኩዊዝ ማሳያ ሳጥኑን ለሙከራ እንዲታይ ማድረግ
+        document.getElementById("resumePromptBox").classList.remove("d-none");
+    }
+
+    function navigateUnit(dir) {
+        let nextIdx = currentUnitIndex + dir;
+        if(nextIdx >= 0 && nextIdx < sampleUnits.length) {
+            loadUnitByIndex(nextIdx);
+        }
+    }
+
+    // ✍️ ተማሪው ኩዊዝ ሲሠራ ውጤቱ በቅጽበት በሰንጠረዥ ላይ እንዲታጠብ የማድረጊያ ሎጂክ
+    function submitSubjectQuiz() {
+        const selectedOpt = document.querySelector('input[name="subQuizOpt"]:checked');
+        if(!selectedOpt) { alert("እባክዎ መጀመሪያ መልስ ይምረጡ!"); return; }
+
+        let quizMark = selectedOpt.value === "B" ? 20 : 0; // ትክክለኛ ከሆነ 20 ነጥብ
+        let classWorkMark = 30; // ኩዊዙን ስለሞከረ የክፍል ሥራ 30 ይሰጠዋል
+        
+        loggedInStudent.subjectScores[selectedSubjectName].qz = quizMark;
+        loggedInStudent.subjectScores[selectedSubjectName].cw = classWorkMark;
+        
+        saveStudentDataToLocalStorage();
+        alert(`🎉 የኩዊዝ መልስዎ ተመዝግቧል!\nየተሰጠዎት ውጤት፦ ኩዊዝ (20) ከፈተኑት ውስጥ ${quizMark} ሆኖ ተመዝግቧል።`);
+        document.getElementById("resumePromptBox").classList.add("d-none");
+    }
+
+    // 📊 የእውነተኛ ውጤት ሰንጠረዥ ማሳያ (Fake ውጤት የሌለበት)
+    function showMyReportCard() {
+        const tbody = document.getElementById("myReportCardTableBody");
+        tbody.innerHTML = "";
+        
+        let subs = gradeSubjects[loggedInStudent.grade] || [];
+        let scores = loggedInStudent.subjectScores || {};
+
+        subs.forEach(sub => {
+            let sc = scores[sub] || { cw: 0, qz: 0, att: 0, ex: 0 };
+            let total = Number(sc.cw) + Number(sc.qz) + Number(sc.att) + Number(sc.ex);
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td class="text-start fw-bold text-success">${sub}</td>
+                    <td>${sc.cw}</td>
+                    <td>${sc.qz}</td>
+                    <td>${sc.att}</td>
+                    <td class="table-warning text-danger fw-bold">${sc.ex}</td>
+                    <td class="table-success fw-bold">${total}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // 📝 ማስታወሻ ደብተር ጽሑፍ በራስ-ሰር በLocalStorage ማስቀመጫ
+    function saveNotes() {
+        if(loggedInStudent) {
+            loggedInStudent.savedNotes = document.getElementById("studentNotes").value;
+            saveStudentDataToLocalStorage();
+        }
+    }
+
+    function saveStudentDataToLocalStorage() {
+        let students = JSON.parse(localStorage.getItem("habAdisStudents")) || [];
+        let idx = students.findIndex(s => s.id === loggedInStudent.id);
+        if(idx !== -1) {
+            students[idx] = loggedInStudent;
+            localStorage.setItem("habAdisStudents", JSON.stringify(students));
+        }
+    }
+
+    // ⏰ የቀጥታ ሰዓት ቆጣሪ (Timer)
+    function startLiveTimer() {
+        timerInterval = setInterval(() => {
+            totalSecondsSpent++;
+            let mins = Math.floor(totalSecondsSpent / 60).toString().padStart(2, '0');
+            let secs = (totalSecondsSpent % 60).toString().padStart(2, '0');
+            document.getElementById("liveTimer").innerText = `${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    function logoutStudent() {
+        clearInterval(timerInterval);
+        loggedInStudent = null;
+        document.getElementById("mainClassroomArea").classList.add("d-none");
+        document.getElementById("notepadPanel").classList.add("d-none");
+        document.getElementById("studentLoginBox").classList.remove("d-none");
+        document.getElementById("loginIdInput").value = "";
+        document.getElementById("loginPassInput").value = "";
+    }
+
+    // 📝 ተንቀሳቃሹን ማስታወሻ ደብተር በስክሪን ላይ የመጎተቻ (Draggable) መዋቅር ሎጂክ
+    const notepad = document.getElementById("notepadPanel");
+    const header = document.getElementById("notepadHeader");
+    let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+
+    header.addEventListener("mousedown", dragStart);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", dragEnd);
+
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+        if (e.target === header || header.contains(e.target)) isDragging = true;
+    }
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            notepad.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        }
+    }
+    function dragEnd() { initialX = currentX; initialY = currentY; isDragging = false; }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hab Adis Online School</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+<style>
+    /* 🌓 የዳርክ ሞድ ፉተር ስታይል ማስተካከያ - ጽሑፎችና አይኮኖች በግልጽ እንዲታዩ */
+    .footer-text { color: #212529; transition: color 0.3s; }
+    .social-icon-link { color: #212529; transition: color 0.3s, transform 0.2s; }
+    .social-icon-link:hover { color: #198754; transform: translateY(-2px); }
+
+    /* ገጹ dark-mode ክላስ ሲኖረው የሚተገበር */
+    body.dark-mode .main-footer { border-top-color: #3d4246 !important; background-color: #1a1d20; }
+    body.dark-mode .footer-text { color: #f8f9fa !important; }
+    body.dark-mode .social-icon-link { color: #f8f9fa !important; }
+    body.dark-mode .social-icon-link:hover { color: #198754 !important; }
+    /* 🎨 የአገልግሎት ካርዶች መሰረታዊ ስታይል */
+    .service-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        max-width: 320px;
+        width: 100%;
+    }
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    }
+    /* አይኮኑ በትክክል ክብ ሆኖ መሃል ላይ እንዲቀመጥ */
+    .service-icon-box {
+        width: 70px;
+        height: 70px;
+        background-color: #e8f5e9;
+        border-radius: 50%;
+    }
+    .service-title { color: #212529; }
+    .service-text { color: #6c757d !important; }
+
+    /* 🌓 የዳርክ ሞድ (Dark Mode) ማስተካከያ - በጥቁር ላይ በግልጽ እንዲነበብ */
+    body.dark-mode .service-card {
+        background-color: #212529 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    body.dark-mode .service-icon-box {
+        background-color: #2c3034 !important;
+    }
+    body.dark-mode .service-title {
+        color: #f8f9fa !important; /* ጽሑፉ ወደ ነጭ ይቀየራል */
+    }
+    body.dark-mode .service-text {
+        color: #adb5bd !important; /* የዝርዝር ጽሑፉ ወደ ፈዘዝ ያለ ነጭ ይቀየራል */
+    }
+
+</style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top shadow-sm bg-white">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success fs-3" href="#" id="idxBrandName">Hab Adis</a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle p-2" onclick="toggleDarkMode()">
+                    <span class="material-icons" id="theme-icon">dark_mode</span>
+                </button>
+                <a href="classroom.html" class="btn btn-outline-success fw-bold d-inline-flex align-items-center">
+                    <span class="material-icons me-1">school</span> Classroom
+                </a>
+                <a href="register.html" class="btn btn-success fw-bold px-4">ተመዝገብ</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="globalNoticeBanner" class="bg-danger text-white py-2 px-3 d-none" style="position: sticky; top: 68px; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="d-flex align-items-center text-start flex-wrap gap-2 small">
+                <span class="material-icons text-warning">campaign</span> 
+                <span id="globalNoticeText"></span>
+                <span id="globalNoticeMedia"></span>
+            </span>
+            <button class="btn btn-sm btn-light border-0 fw-bold rounded-circle px-2" onclick="closeNoticeBanner()">X</button>
+        </div>
+    </div>
+
+    <section class="hero-section text-white d-flex align-items-center text-center">
+        <div class="container bg-dark bg-opacity-60 p-5 rounded-4 shadow">
+            <h1 class="display-4 fw-bold mb-3" id="idxHeroTitle">Hab Adis Virtual School</h1>
+            <p class="lead text-warning mb-4 fs-3 fw-bold" id="idxHeroSubtitle">"የምንሠራው ለነገ ነው፥ ለዛሬ አይደለም!"</p>
+            <p class="mx-auto fs-5" style="max-width: 800px;" id="idxHeroDesc">
+                ከ5ኛ እስከ 12ኛ ክፍል ጥራት ያለው የቪዲዮ ትምህርት፣ የቀጥታ ስርጭት እና ዘመናዊ ምዘናዎችን በአንድ ቦታ ያግኙ።
+            </p>
+        </div>
+    </section>
+
+    <section class="services-section py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold text-success mb-5">🌱 የምንሰጣቸው አገልግሎቶች</h2>
+        
+        <div class="row g-4 justify-content-center">
+            
+            <div class="col-md-4 col-sm-6 d-flex justify-content-center">
+                <div class="card service-card p-4 text-center border-0 shadow-sm">
+                    <div class="service-icon-box d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <span class="material-icons text-success fs-1">video_library</span>
+                    </div>
+                    <h5 class="fw-bold service-title">ቀላል የቪዲዮ ትምህርቶች</h5>
+                    <p class="service-text text-muted small">በአዲሱ የኢትዮጵያ ካሪኩለም መሠረት የተዘጋጁ ማራኪና ግልጽ የቪዲዮ ትምህርቶች ለአጠቃቀም ምቹ በሆነ መልኩ ቀርበዋል።</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 d-flex justify-content-center">
+                <div class="card service-card p-4 text-center border-0 shadow-sm">
+                    <div class="service-icon-box d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <span class="material-icons text-success fs-1">quiz</span>
+                    </div>
+                    <h5 class="fw-bold service-title">ኢንተራክቲቭ ኩዊዞች</h5>
+                    <p class="service-text text-muted small">ተማሪዎች በቪዲዮው መሃል ቆም እያሉ ራሳቸውን የሚፈትሹባቸውና የዕውቀት ደረጃቸውን የሚለኩባቸው ፈጣን ጥያቄዎች።</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 d-flex justify-content-center">
+                <div class="card service-card p-4 text-center border-0 shadow-sm">
+                    <div class="service-icon-box d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <span class="material-icons text-success fs-1">analytics</span>
+                    </div>
+                    <h5 class="fw-bold service-title">የውጤት ክትትል ማዕከል</h5>
+                    <p class="service-text text-muted small">ተማሪዎችም ሆኑ ወላጆች በየቀኑ የተሰሩ የክፍል ስራዎችን፣ አሳይመንቶችን እና ፈተናዎችን ውጤት በሰንጠረዥ የሚያዩበት ገጽ።</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+    <section class="container py-5 bg-light rounded-4 my-4">
+        <h2 class="fw-bold text-success text-center mb-5">የትምህርት ክፍሎች</h2>
+        <div class="row g-4 justify-content-center" id="classes-container"></div>
+    </section>
+
+    <section class="container py-5">
+        <h2 class="fw-bold text-success text-center mb-5">ታዋቂ መምህራኖቻችን</h2>
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6 text-center">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300" class="rounded-circle mb-3 shadow-sm" width="130" height="130" style="object-fit:cover;">
+                <h5 class="fw-bold m-0">ዶ/ር አስቴር በቀለ</h5>
+                <p class="text-success small">የባዮሎጂ መምህር</p>
+            </div>
+            <div class="col-md-3 col-sm-6 text-center">
+                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300" class="rounded-circle mb-3 shadow-sm" width="130" height="130" style="object-fit:cover;">
+                <h5 class="fw-bold m-0">መምህር ዮናስ ታደሰ</h5>
+                <p class="text-success small">የሂሳብ መምህር</p>
+            </div>
+            <div class="col-md-3 col-sm-6 text-center">
+                <img src="https://images.unsplash.com/photo-1580894732444-8fecef2271ff?w=300" class="rounded-circle mb-3 shadow-sm" width="130" height="130" style="object-fit:cover;">
+                <h5 class="fw-bold m-0">ወ/ሮ ሰላማዊት ሙሉጌታ</h5>
+                <p class="text-success small">የእንግሊዘኛ መምህር</p>
+            </div>
+            <div class="col-md-3 col-sm-6 text-center">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300" class="rounded-circle mb-3 shadow-sm" width="130" height="130" style="object-fit:cover;">
+                <h5 class="fw-bold m-0">ዶ/ር ኪሩቤል ወንድሙ</h5>
+                <p class="text-success small">የፊዚክስ መምህር</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5 bg-success bg-opacity-10 rounded-4">
+        <h2 class="fw-bold text-success text-center mb-4">የተመራቂ ተማሪዎቻችን ስኬት</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card border-0 p-2 text-center">
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500" class="img-fluid rounded mb-2" style="height:180px; object-fit:cover;">
+                    <h6 class="fw-bold m-0 mt-2">የ2025 ከፍተኛ ውጤት ያመጡ ተማሪዎች</h6>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 p-2 text-center">
+                    <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500" class="img-fluid rounded mb-2" style="height:180px; object-fit:cover;">
+                    <h6 class="fw-bold m-0 mt-2">የእውቅና እና የሽልማት ስነ-ስርዓት</h6>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 p-2 text-center">
+                    <img src="https://images.unsplash.com/photo-1525921429624-479b6c294521?w=500" class="img-fluid rounded mb-2" style="height:180px; object-fit:cover;">
+                    <h6 class="fw-bold m-0 mt-2">የካምパス መግቢያ ውጤት ያስመዘገቡ</h6>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <footer class="main-footer py-4 mt-5 border-top">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="mb-0 footer-text">© 2026 Hab Adis Virtual School. ሁሉም መብቱ የተጠበቀ ነው።</p>
+            </div>
+            <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                <!-- 🌐 የማህበራዊ ሚዲያ ሊንኮች እና አይኮኖች -->
+                <div class="footer-social-links d-flex justify-content-center justify-content-md-end gap-3">
+                    <a href="https://facebook.com" target="_blank" class="social-icon-link d-flex align-items-center justify-content-center" title="Facebook">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
+                            <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.719V6.24c0-2.004 1.19-3.112 3.014-3.112.872 0 1.787.156 1.787.156v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
+                        </svg>
+                    </a>
+                    <a href="https://t.me" target="_blank" class="social-icon-link d-flex align-items-center justify-content-center" title="Telegram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-telegram" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906q-1.168.486-4.666 2.01-.567.225-.56.544q-.008.382.592.57l1.881.588 4.361-2.75q.222-.153.274-.012.052.14-.143.33l-3.532 3.192-.138 1.961q.012.394.211.59l1.653-1.538 2.443 1.8q.838.461 1.243.252.404-.21.157-1.3l-.99-4.673q-.223-.974-1.168-1.366z"/>
+                        </svg>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank" class="social-icon-link d-flex align-items-center justify-content-center" title="TikTok">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-tiktok" viewBox="0 0 16 16">
+                            <path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3z"/>
+                        </svg>
+                    </a>
+                    <a href="https://youtube.com" target="_blank" class="social-icon-link d-flex align-items-center justify-content-center" title="YouTube">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-youtube" viewBox="0 0 16 16">
+                            <path d="M8.051 1.999h-.089c-.612-.017-1.408-.036-3.227-.036-1.612 0-5.694.015-5.694.015S.48 3.57.364 5.682C.249 7.744.249 10 .249 10s0 2.256.115 4.318c.116 2.112.556 3.668.556 3.668s1.01.23 5.694.23c1.819 0 2.614-.02 3.228-.036 1.612 0 5.694-.015 5.694-.015s1.427-1.556 1.543-3.668c.116-2.112.116-4.318.116-4.318s0-2.256-.116-4.318C15.397 3.57 14.384 1.999 14.384 1.999s-1.01-.23-5.694-.23M6.5 11.5v-3l2.5 1.5z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="theme.js"></script>
+    <script>
+        // ሁሉንም ዳታዎች ከአድሚን ኤዲተር በመጫን ገጹን ማደስ
+        document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem("idxBrandName")) document.getElementById("idxBrandName").innerText = localStorage.getItem("idxBrandName");
+            if(localStorage.getItem("idxHeroTitle")) document.getElementById("idxHeroTitle").innerText = localStorage.getItem("idxHeroTitle");
+            if(localStorage.getItem("idxHeroSubtitle")) document.getElementById("idxHeroSubtitle").innerText = localStorage.getItem("idxHeroSubtitle");
+            if(localStorage.getItem("idxHeroDesc")) document.getElementById("idxHeroDesc").innerText = localStorage.getItem("idxHeroDesc");
+            if(localStorage.getItem("idxSrv1Title")) document.getElementById("idxSrv1Title").innerText = localStorage.getItem("idxSrv1Title");
+            if(localStorage.getItem("idxSrv1Desc")) document.getElementById("idxSrv1Desc").innerText = localStorage.getItem("idxSrv1Desc");
+            if(localStorage.getItem("idxSrv2Title")) document.getElementById("idxSrv2Title").innerText = localStorage.getItem("idxSrv2Title");
+            if(localStorage.getItem("idxSrv2Desc")) document.getElementById("idxSrv2Desc").innerText = localStorage.getItem("idxSrv2Desc");
+            if(localStorage.getItem("idxSrv3Title")) document.getElementById("idxSrv3Title").innerText = localStorage.getItem("idxSrv3Title");
+            if(localStorage.getItem("idxSrv3Desc")) document.getElementById("idxSrv3Desc").innerText = localStorage.getItem("idxSrv3Desc");
+
+            const btnText = localStorage.getItem("habAdisBtnText") || "Buy Course";
+            const coursePrice = localStorage.getItem("habAdisPriceText") || "7,500 ETB / ዓመት";
+
+            const classesData = [
+                { id: 5, name: "5ኛ ክፍል" }, { id: 6, name: "6ኛ ክፍል" },
+                { id: 7, name: "7ኛ ክፍል" }, { id: 8, name: "8ኛ ክፍል" },
+                { id: 9, name: "9ኛ ክፍል" }, { id: 10, name: "10ኛ ክፍል" },
+                { id: 11, name: "11ኛ ክፍል" }, { id: 12, name: "12ኛ ክፍል" }
+            ];
+            const container = document.getElementById("classes-container");
+            classesData.forEach(cls => {
+                container.innerHTML += `
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm p-3 text-center h-100">
+                            <span class="material-icons text-success fs-2 mb-1">menu_book</span>
+                            <h6 class="fw-bold small mb-1">${cls.name}</h6>
+                            <p class="text-success small fw-bold m-0" style="font-size:0.85rem;">${coursePrice}</p>
+                            <a href="register.html?grade=${cls.id}" class="btn btn-warning text-white btn-sm fw-bold mt-2 w-100" style="font-size:0.8rem;">${btnText}</a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // የአድሚን ማስታወቂያ
+            const notice = localStorage.getItem("habAdisGlobalNotice");
+            const mediaType = localStorage.getItem("habAdisNoticeMediaType");
+            const mediaUrl = localStorage.getItem("habAdisNoticeMediaUrl");
+            if(notice && notice.trim() !== "") {
+                document.getElementById("globalNoticeText").innerText = notice;
+                if(mediaUrl && mediaUrl.trim() !== "") {
+                    let icon = mediaType === "image" ? "🖼️" : "🎬";
+                    document.getElementById("globalNoticeMedia").innerHTML = `<a href="${mediaUrl}" target="_blank" class="btn btn-sm btn-warning text-dark ms-2 fw-bold py-0 small">${icon} እይ</a>`;
+                }
+                document.getElementById("globalNoticeBanner").classList.remove("d-none");
+            }
+        });
+
+        function closeNoticeBanner() {
+            document.getElementById("globalNoticeBanner").classList.add("d-none");
+        }
+    document.addEventListener("DOMContentLoaded", () => {
+        let dailyViews = parseInt(localStorage.getItem("habAdis_daily_views")) || 0;
+        dailyViews++;
+        localStorage.setItem("habAdis_daily_views", dailyViews);
+    });
+    </script>
+</body>
+</html>
